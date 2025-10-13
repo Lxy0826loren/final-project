@@ -123,8 +123,8 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-screen-2xl mx-auto p-8">
-        <div className="grid grid-cols-5 gap-8 mb-8">
-          <div className="col-span-4 bg-card border border-card-border rounded-lg p-6 h-[600px]">
+        <div className="grid grid-cols-7 gap-8 mb-8">
+          <div className="col-span-5 bg-card border border-card-border rounded-lg p-6 h-[550px]">
             <h2 className="text-lg font-medium text-foreground mb-4">
               Bipartite Graph: LLM Topics ↔ Psychology Topics
             </h2>
@@ -145,7 +145,7 @@ export default function Dashboard() {
             />
           </div>
 
-          <div className="col-span-1 bg-card border border-card-border rounded-lg p-6 h-[600px]">
+          <div className="col-span-2 bg-card border border-card-border rounded-lg p-6 h-[550px]">
             <CitationLineChart
               data={getLineChartData()}
               title={getLineChartTitle()}
@@ -155,8 +155,8 @@ export default function Dashboard() {
         </div>
 
         {selectedPsychNode && (
-          <div className="grid grid-cols-3 gap-8">
-            <div className="col-span-2 bg-card border border-card-border rounded-lg p-6 h-[500px]">
+          <div className="grid grid-cols-10 gap-8">
+            <div className="col-span-7 bg-card border border-card-border rounded-lg p-6 h-[500px]">
               <TheoryTable
                 data={socialClinicalTheories}
                 title="Subtopics and Theories in Social-Clinical Cluster"
@@ -168,7 +168,7 @@ export default function Dashboard() {
             </div>
 
             {selectedTheory && (
-              <div className="col-span-1 h-[500px]">
+              <div className="col-span-3 h-[500px]">
                 <TheoryBarChart
                   data={cbtDistribution}
                   title="Citation Distribution: CBT Across LLM Topics"
