@@ -58,6 +58,9 @@ export default function Dashboard() {
   const theoryTableData = selectedPsychNode ? getTheoryTableData(selectedPsychNode) : [];
   const theoryDistributionData = selectedTheory ? getTheoryDistribution(selectedTheory) : [];
 
+  console.log('selectedPsychNode:', selectedPsychNode);
+  console.log('theoryTableData:', theoryTableData);
+
   const getPsychClusterTitle = () => {
     if (selectedPsychNode && psychClusters[selectedPsychNode]) {
       return `Subtopics and Theories in ${psychClusters[selectedPsychNode].topic}`;
@@ -102,9 +105,11 @@ export default function Dashboard() {
                 console.log('LLM Node clicked:', id);
               }}
               onPsychNodeClick={(id) => {
+                console.log('Psychology Node clicked:', id);
+                console.log('Current selectedPsychNode:', selectedPsychNode);
+                console.log('psychClusters keys:', Object.keys(psychClusters));
                 setSelectedPsychNode(selectedPsychNode === id ? null : id);
                 setSelectedTheory(null);
-                console.log('Psychology Node clicked:', id);
               }}
             />
           </div>

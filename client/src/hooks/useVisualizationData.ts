@@ -68,6 +68,9 @@ export function useVisualizationData() {
       size: cluster.size
     }));
 
+    console.log('Generated LLM nodes:', llmNodes.map(n => n.id));
+    console.log('Generated Psych nodes:', psychNodes.map(n => n.id));
+
     return [...llmNodes, ...psychNodes];
   };
 

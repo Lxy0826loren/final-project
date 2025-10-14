@@ -144,6 +144,27 @@ export default function BipartiteGraph({
       const isActive = hoveredNode === node.id || selectedLLMNode === node.id || connectedNodes.has(node.id);
       const nodeOpacity = (!hoveredNode && !selectedLLMNode && !selectedPsychNode) ? 0.85 : (isActive ? 1 : 0.3);
 
+      // Clickable area (larger invisible circle)
+      g.append('circle')
+        .attr('cx', pos.x)
+        .attr('cy', pos.y)
+        .attr('r', nodeRadius * 2)
+        .attr('fill', 'transparent')
+        .attr('cursor', 'pointer')
+        .attr('data-testid', `llm-node-${node.id}`)
+        .on('mouseenter', function() {
+          setHoveredNode(node.id);
+          setTooltip({ x: pos.x, y: pos.y - 30, content: `${node.label} (${node.size} papers)` });
+        })
+        .on('mouseleave', function() {
+          setHoveredNode(null);
+          setTooltip(null);
+        })
+        .on('click', () => {
+          onLLMNodeClick?.(node.id);
+        });
+
+      // Visual circle
       g.append('circle')
         .attr('cx', pos.x)
         .attr('cy', pos.y)
@@ -152,22 +173,8 @@ export default function BipartiteGraph({
         .attr('opacity', nodeOpacity)
         .attr('stroke', 'hsl(var(--background))')
         .attr('stroke-width', selectedLLMNode === node.id ? 4 : 2)
-        .attr('cursor', 'pointer')
-        .style('transition', 'all 0.15s')
-        .attr('data-testid', `llm-node-${node.id}`)
-        .on('mouseenter', function() {
-          d3.select(this).attr('r', nodeRadius * 1.2);
-          setHoveredNode(node.id);
-          setTooltip({ x: pos.x, y: pos.y - 30, content: `${node.label} (${node.size} papers)` });
-        })
-        .on('mouseleave', function() {
-          d3.select(this).attr('r', nodeRadius);
-          setHoveredNode(null);
-          setTooltip(null);
-        })
-        .on('click', () => {
-          onLLMNodeClick?.(node.id);
-        });
+        .attr('pointer-events', 'none')
+        .style('transition', 'all 0.15s');
 
       g.append('text')
         .attr('x', pos.x)
@@ -177,6 +184,7 @@ export default function BipartiteGraph({
         .attr('font-size', '12px')
         .attr('font-weight', '500')
         .attr('opacity', nodeOpacity)
+        .attr('pointer-events', 'none')
         .text(node.label);
     });
 
@@ -185,6 +193,27 @@ export default function BipartiteGraph({
       const isActive = hoveredNode === node.id || selectedPsychNode === node.id || connectedNodes.has(node.id);
       const nodeOpacity = (!hoveredNode && !selectedLLMNode && !selectedPsychNode) ? 0.85 : (isActive ? 1 : 0.3);
 
+      // Clickable area (larger invisible circle)
+      g.append('circle')
+        .attr('cx', pos.x)
+        .attr('cy', pos.y)
+        .attr('r', nodeRadius * 2)
+        .attr('fill', 'transparent')
+        .attr('cursor', 'pointer')
+        .attr('data-testid', `psych-node-${node.id}`)
+        .on('mouseenter', function() {
+          setHoveredNode(node.id);
+          setTooltip({ x: pos.x, y: pos.y + 30, content: `${node.label} (${node.size} papers)` });
+        })
+        .on('mouseleave', function() {
+          setHoveredNode(null);
+          setTooltip(null);
+        })
+        .on('click', () => {
+          onPsychNodeClick?.(node.id);
+        });
+
+      // Visual circle
       g.append('circle')
         .attr('cx', pos.x)
         .attr('cy', pos.y)
@@ -193,22 +222,8 @@ export default function BipartiteGraph({
         .attr('opacity', nodeOpacity)
         .attr('stroke', 'hsl(var(--background))')
         .attr('stroke-width', selectedPsychNode === node.id ? 4 : 2)
-        .attr('cursor', 'pointer')
-        .style('transition', 'all 0.15s')
-        .attr('data-testid', `psych-node-${node.id}`)
-        .on('mouseenter', function() {
-          d3.select(this).attr('r', nodeRadius * 1.2);
-          setHoveredNode(node.id);
-          setTooltip({ x: pos.x, y: pos.y + 30, content: `${node.label} (${node.size} papers)` });
-        })
-        .on('mouseleave', function() {
-          d3.select(this).attr('r', nodeRadius);
-          setHoveredNode(null);
-          setTooltip(null);
-        })
-        .on('click', () => {
-          onPsychNodeClick?.(node.id);
-        });
+        .attr('pointer-events', 'none')
+        .style('transition', 'all 0.15s');
 
       g.append('text')
         .attr('x', pos.x)
@@ -218,6 +233,7 @@ export default function BipartiteGraph({
         .attr('font-size', '12px')
         .attr('font-weight', '500')
         .attr('opacity', nodeOpacity)
+        .attr('pointer-events', 'none')
         .text(node.label);
     });
 
