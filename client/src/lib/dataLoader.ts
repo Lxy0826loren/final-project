@@ -53,9 +53,9 @@ export async function loadFilteredPapersInfo(): Promise<any> {
   return await response.json();
 }
 
-// Load filtered refs info
-export async function loadFilteredRefsInfo(): Promise<any> {
-  const response = await fetch('/data/filtered_refs_5_info_1760396379773.json');
+// Load filtered papers with references (for citation relationships)
+export async function loadFilteredPapers(): Promise<any> {
+  const response = await fetch('/data/filtered_papers_5_1760396379773.json');
   return await response.json();
 }
 

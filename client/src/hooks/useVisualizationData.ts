@@ -4,7 +4,7 @@ import {
   loadPsychClusters,
   loadTheoryPool,
   loadFilteredPapersInfo,
-  loadFilteredRefsInfo,
+  loadFilteredPapers,
   getClusterNumber,
   getTopTheories,
   type LLMCluster,
@@ -22,24 +22,24 @@ export function useVisualizationData() {
   const [psychClusters, setPsychClusters] = useState<Record<string, PsychCluster>>({});
   const [theoryPool, setTheoryPool] = useState<Record<string, ClusterTheories>>({});
   const [papersInfo, setPapersInfo] = useState<any>(null);
-  const [refsInfo, setRefsInfo] = useState<any>(null);
+  const [filteredPapers, setFilteredPapers] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [llm, psych, theories, papers, refs] = await Promise.all([
+        const [llm, psych, theories, papers, filtPapers] = await Promise.all([
           loadLLMClusters(),
           loadPsychClusters(),
           loadTheoryPool(),
           loadFilteredPapersInfo(),
-          loadFilteredRefsInfo()
+          loadFilteredPapers()
         ]);
 
         setLlmClusters(llm);
         setPsychClusters(psych);
         setTheoryPool(theories);
         setPapersInfo(papers);
-        setRefsInfo(refs);
+        setFilteredPapers(filtPapers);
         setLoading(false);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -68,63 +68,89 @@ export function useVisualizationData() {
       size: cluster.size
     }));
 
-    console.log('Generated LLM nodes:', llmNodes.map(n => n.id));
-    console.log('Generated Psych nodes:', psychNodes.map(n => n.id));
-
     return [...llmNodes, ...psychNodes];
   };
 
-  // Generate bipartite graph edges
+  // Generate bipartite graph edges based on real citation relationships
   const getBipartiteEdges = (): BipartiteEdge[] => {
+    if (!filteredPapers) return [];
+
     const edges: BipartiteEdge[] = [];
+    const edgeWeights: Record<string, number> = {};
     
-    // Calculate edges based on citation relationships
+    // Calculate edges based on actual citation relationships from filteredPapers
     Object.entries(llmClusters).forEach(([llmKey, llmCluster]) => {
+      const llmPaperIds = new Set(llmCluster.docs.map(d => d.paperId));
+
       Object.entries(psychClusters).forEach(([psychKey, psychCluster]) => {
-        // Count overlapping papers/references
-        const llmPaperIds = new Set(llmCluster.docs.map(d => d.paperId));
         const psychPaperIds = new Set(psychCluster.docs.map(d => d.paperId));
         
-        let overlap = 0;
-        llmPaperIds.forEach(id => {
-          if (psychPaperIds.has(id)) overlap++;
+        let citationCount = 0;
+        
+        // Count citations from LLM papers to psych papers
+        filteredPapers.forEach((paper: any) => {
+          if (llmPaperIds.has(paper.paperId) && paper.references) {
+            paper.references.forEach((ref: any) => {
+              if (psychPaperIds.has(ref.paperId)) {
+                citationCount++;
+              }
+            });
+          }
         });
 
-        if (overlap > 0) {
-          edges.push({
-            source: llmKey,
-            target: psychKey,
-            weight: overlap
-          });
+        if (citationCount > 0) {
+          const edgeKey = `${llmKey}-${psychKey}`;
+          edgeWeights[edgeKey] = citationCount;
         }
       });
+    });
+
+    // Convert to edge array
+    Object.entries(edgeWeights).forEach(([key, weight]) => {
+      const [source, target] = key.split('-');
+      edges.push({ source, target, weight });
     });
 
     return edges;
   };
 
-  // Generate citation time series data
+  // Generate citation time series data from real publication dates
   const getCitationTimeSeries = (llmClusterId?: string): CitationDataPoint[] => {
-    if (!papersInfo || !llmClusterId) {
-      // Return overall aggregated data
-      return generateMonthlyData(Object.values(llmClusters).reduce((sum, c) => sum + c.size, 0));
+    if (!papersInfo) return [];
+
+    // Get papers for the selected cluster or all papers
+    let paperIds: Set<string>;
+    if (llmClusterId && llmClusters[llmClusterId]) {
+      paperIds = new Set(llmClusters[llmClusterId].docs.map(d => d.paperId));
+    } else {
+      // All LLM papers
+      paperIds = new Set(
+        Object.values(llmClusters).flatMap(c => c.docs.map(d => d.paperId))
+      );
     }
 
-    const cluster = llmClusters[llmClusterId];
-    if (!cluster) return [];
-
-    return generateMonthlyData(cluster.size);
-  };
-
-  // Generate monthly data (simulated based on cluster size)
-  const generateMonthlyData = (totalSize: number): CitationDataPoint[] => {
-    const months = ['2022-01', '2022-04', '2022-07', '2022-10', '2023-01', '2023-04', '2023-07', '2023-10', '2024-01', '2024-04'];
-    const baseValue = Math.floor(totalSize / 10);
+    // Count papers by month
+    const monthCounts: Record<string, number> = {};
     
-    return months.map((month, index) => ({
-      month,
-      citations: baseValue + Math.floor((index / months.length) * totalSize)
-    }));
+    papersInfo.forEach((paper: any) => {
+      if (paperIds.has(paper.paperId) && paper.publicationDate) {
+        // Extract YYYY-MM from publication date
+        const month = paper.publicationDate.substring(0, 7);
+        monthCounts[month] = (monthCounts[month] || 0) + 1;
+      }
+    });
+
+    // Convert to sorted array with cumulative counts
+    const sortedMonths = Object.keys(monthCounts).sort();
+    let cumulative = 0;
+    
+    return sortedMonths.map(month => {
+      cumulative += monthCounts[month];
+      return {
+        month,
+        citations: cumulative
+      };
+    });
   };
 
   // Get theory table data for a psychology cluster
@@ -146,20 +172,54 @@ export function useVisualizationData() {
     })).sort((a, b) => b.citations - a.citations);
   };
 
-  // Get theory distribution across LLM clusters
+  // Get theory distribution across LLM clusters using real citation data
   const getTheoryDistribution = (theoryName: string): TheoryDistribution[] => {
+    if (!filteredPapers) return [];
+
+    // Find the psychology cluster containing this theory
+    let psychClusterKey: string | null = null;
+    for (const [clusterKey, theories] of Object.entries(theoryPool)) {
+      if (theoryName in theories) {
+        psychClusterKey = clusterKey;
+        break;
+      }
+    }
+
+    if (!psychClusterKey) return [];
+
+    const psychCluster = psychClusters[psychClusterKey];
+    if (!psychCluster) return [];
+
+    // Get psychology paper IDs in this cluster
+    const psychPaperIds = new Set(psychCluster.docs.map(d => d.paperId));
+
+    // Count citations from each LLM cluster to psychology papers in this cluster
     const distribution: TheoryDistribution[] = [];
 
-    Object.entries(llmClusters).forEach(([key, cluster]) => {
-      // Simulate distribution based on cluster size
-      const citations = Math.floor(Math.random() * 40) + 10;
+    Object.entries(llmClusters).forEach(([llmKey, llmCluster]) => {
+      // Get LLM paper IDs in this cluster
+      const llmPaperIds = new Set(llmCluster.docs.map(d => d.paperId));
+      
+      // Count how many times LLM papers cite psychology papers in this cluster
+      let citationCount = 0;
+      
+      filteredPapers.forEach((paper: any) => {
+        if (llmPaperIds.has(paper.paperId) && paper.references) {
+          paper.references.forEach((ref: any) => {
+            if (psychPaperIds.has(ref.paperId)) {
+              citationCount++;
+            }
+          });
+        }
+      });
+
       distribution.push({
-        topic: cluster.topic.split(' ').slice(0, 2).join(' '),
-        citations
+        topic: llmCluster.topic.split(' ').slice(0, 2).join(' '),
+        citations: citationCount
       });
     });
 
-    return distribution;
+    return distribution.sort((a, b) => b.citations - a.citations);
   };
 
   return {
