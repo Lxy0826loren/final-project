@@ -91,6 +91,36 @@ export default function BipartiteGraph({
       return 0.1;
     };
 
+    // Create gradients FIRST before drawing edges
+    const defs = svg.selectAll('defs').data([null]).join('defs');
+    
+    edges.forEach(edge => {
+      const sourceNode = nodes.find(n => n.id === edge.source)!;
+      const targetNode = nodes.find(n => n.id === edge.target)!;
+      const sourceColor = sourceNode.type === 'llm' ? llmColors[sourceNode.cluster] : psychColors[sourceNode.cluster];
+      const targetColor = targetNode.type === 'llm' ? llmColors[targetNode.cluster] : psychColors[targetNode.cluster];
+      
+      const gradientId = `gradient-${edge.source.replace(/\s+/g, '-')}-${edge.target.replace(/\s+/g, '-')}`;
+      
+      defs.selectAll(`#${gradientId}`).data([null])
+        .join('linearGradient')
+        .attr('id', gradientId)
+        .attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', getNodePos(edge.source).x)
+        .attr('y1', getNodePos(edge.source).y)
+        .attr('x2', getNodePos(edge.target).x)
+        .attr('y2', getNodePos(edge.target).y)
+        .selectAll('stop')
+        .data([
+          { offset: '0%', color: sourceColor },
+          { offset: '100%', color: targetColor }
+        ])
+        .join('stop')
+        .attr('offset', d => d.offset)
+        .attr('stop-color', d => d.color);
+    });
+
+    // Now draw edges using the gradients
     g.selectAll('.edge')
       .data(edges)
       .join('path')
@@ -102,40 +132,13 @@ export default function BipartiteGraph({
         return `M ${source.x} ${source.y} C ${source.x} ${midY}, ${target.x} ${midY}, ${target.x} ${target.y}`;
       })
       .attr('stroke', d => {
-        const sourceNode = nodes.find(n => n.id === d.source)!;
-        const targetNode = nodes.find(n => n.id === d.target)!;
-        const sourceColor = sourceNode.type === 'llm' ? llmColors[sourceNode.cluster] : psychColors[sourceNode.cluster];
-        const targetColor = targetNode.type === 'llm' ? llmColors[targetNode.cluster] : psychColors[targetNode.cluster];
-        return `url(#gradient-${d.source}-${d.target})`;
+        const gradientId = `gradient-${d.source.replace(/\s+/g, '-')}-${d.target.replace(/\s+/g, '-')}`;
+        return `url(#${gradientId})`;
       })
       .attr('stroke-width', d => 1 + (d.weight / 10))
       .attr('fill', 'none')
-      .attr('opacity', edgeOpacity)
+      .attr('opacity', d => edgeOpacity(d))
       .style('transition', 'opacity 0.3s');
-
-    edges.forEach(edge => {
-      const sourceNode = nodes.find(n => n.id === edge.source)!;
-      const targetNode = nodes.find(n => n.id === edge.target)!;
-      const sourceColor = sourceNode.type === 'llm' ? llmColors[sourceNode.cluster] : psychColors[sourceNode.cluster];
-      const targetColor = targetNode.type === 'llm' ? llmColors[targetNode.cluster] : psychColors[targetNode.cluster];
-      
-      const gradient = svg.append('defs')
-        .append('linearGradient')
-        .attr('id', `gradient-${edge.source}-${edge.target}`)
-        .attr('gradientUnits', 'userSpaceOnUse')
-        .attr('x1', getNodePos(edge.source).x)
-        .attr('y1', getNodePos(edge.source).y)
-        .attr('x2', getNodePos(edge.target).x)
-        .attr('y2', getNodePos(edge.target).y);
-
-      gradient.append('stop')
-        .attr('offset', '0%')
-        .attr('stop-color', sourceColor);
-
-      gradient.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', targetColor);
-    });
 
     const nodeRadius = 10;
 
