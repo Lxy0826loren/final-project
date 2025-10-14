@@ -168,6 +168,12 @@ export function useVisualizationData() {
     const topTheories = getTopTheories(clusterTheories, 3);
     const topTheoryNames = new Set(topTheories.map(t => t.name));
 
+    // Create a map to preserve subtopic order
+    const subtopicOrder = new Map<string, number>();
+    Object.entries(secondaryClusterData).forEach(([subClusterKey, subCluster], index) => {
+      subtopicOrder.set(subCluster.topic, index);
+    });
+
     // Iterate through secondary clusters (subtopics)
     Object.entries(secondaryClusterData).forEach(([subClusterKey, subCluster]) => {
       // For each theory in this subtopic
@@ -184,7 +190,12 @@ export function useVisualizationData() {
       });
     });
 
-    return rows.sort((a, b) => b.citations - a.citations);
+    // Sort by subtopic order first, then by citations within each subtopic (descending)
+    return rows.sort((a, b) => {
+      const subtopicDiff = (subtopicOrder.get(a.subtopic) || 0) - (subtopicOrder.get(b.subtopic) || 0);
+      if (subtopicDiff !== 0) return subtopicDiff;
+      return b.citations - a.citations;
+    });
   };
 
   // Get theory distribution across LLM clusters using real citation data
