@@ -1,111 +1,75 @@
 import { useState } from 'react';
-import BipartiteGraph, { type BipartiteNode, type BipartiteEdge } from '@/components/BipartiteGraph';
-import CitationLineChart, { type CitationDataPoint } from '@/components/CitationLineChart';
-import TheoryTable, { type TheoryRow } from '@/components/TheoryTable';
-import TheoryBarChart, { type TheoryDistribution } from '@/components/TheoryBarChart';
+import BipartiteGraph from '@/components/BipartiteGraph';
+import CitationLineChart from '@/components/CitationLineChart';
+import TheoryTable from '@/components/TheoryTable';
+import TheoryBarChart from '@/components/TheoryBarChart';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useVisualizationData } from '@/hooks/useVisualizationData';
 
 export default function Dashboard() {
   const [selectedLLMNode, setSelectedLLMNode] = useState<string | null>(null);
   const [selectedPsychNode, setSelectedPsychNode] = useState<string | null>(null);
   const [selectedTheory, setSelectedTheory] = useState<string | null>(null);
 
-  const bipartiteNodes: BipartiteNode[] = [
-    { id: 'llm1', label: 'Multimodal Learning', type: 'llm', cluster: 0, size: 161 },
-    { id: 'llm2', label: 'Educational Application', type: 'llm', cluster: 1, size: 143 },
-    { id: 'llm3', label: 'Model Adaptation', type: 'llm', cluster: 2, size: 187 },
-    { id: 'llm4', label: 'Bias & Culture', type: 'llm', cluster: 3, size: 156 },
-    { id: 'llm5', label: 'Advanced Reasoning', type: 'llm', cluster: 4, size: 198 },
-    { id: 'llm6', label: 'Domain Knowledge', type: 'llm', cluster: 5, size: 161 },
-    { id: 'llm7', label: 'Language Ability', type: 'llm', cluster: 6, size: 134 },
-    { id: 'llm8', label: 'Social Intelligence', type: 'llm', cluster: 7, size: 128 },
-    { id: 'psych1', label: 'Social-Clinical', type: 'psych', cluster: 0, size: 298 },
-    { id: 'psych2', label: 'Education', type: 'psych', cluster: 1, size: 267 },
-    { id: 'psych3', label: 'Language', type: 'psych', cluster: 2, size: 245 },
-    { id: 'psych4', label: 'Social Cognition', type: 'psych', cluster: 3, size: 500 },
-    { id: 'psych5', label: 'Neural Mechanisms', type: 'psych', cluster: 4, size: 189 },
-    { id: 'psych6', label: 'Psychometrics', type: 'psych', cluster: 5, size: 234 },
-  ];
+  const {
+    loading,
+    getBipartiteNodes,
+    getBipartiteEdges,
+    getCitationTimeSeries,
+    getTheoryTableData,
+    getTheoryDistribution,
+    llmClusters,
+    psychClusters
+  } = useVisualizationData();
 
-  const bipartiteEdges: BipartiteEdge[] = [
-    { source: 'llm1', target: 'psych1', weight: 45 },
-    { source: 'llm1', target: 'psych4', weight: 38 },
-    { source: 'llm2', target: 'psych2', weight: 68 },
-    { source: 'llm2', target: 'psych1', weight: 25 },
-    { source: 'llm3', target: 'psych6', weight: 42 },
-    { source: 'llm3', target: 'psych5', weight: 31 },
-    { source: 'llm4', target: 'psych4', weight: 55 },
-    { source: 'llm4', target: 'psych3', weight: 28 },
-    { source: 'llm5', target: 'psych3', weight: 38 },
-    { source: 'llm5', target: 'psych5', weight: 50 },
-    { source: 'llm6', target: 'psych2', weight: 36 },
-    { source: 'llm6', target: 'psych6', weight: 44 },
-    { source: 'llm7', target: 'psych3', weight: 72 },
-    { source: 'llm7', target: 'psych2', weight: 33 },
-    { source: 'llm8', target: 'psych1', weight: 41 },
-    { source: 'llm8', target: 'psych4', weight: 58 },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-semibold text-foreground mb-2">Loading visualization data...</div>
+          <div className="text-sm text-muted-foreground">Please wait while we process the citation network</div>
+        </div>
+      </div>
+    );
+  }
 
-  const overallLineData: CitationDataPoint[] = [
-    { month: '2022-01', citations: 145 },
-    { month: '2022-04', citations: 168 },
-    { month: '2022-07', citations: 192 },
-    { month: '2022-10', citations: 225 },
-    { month: '2023-01', citations: 268 },
-    { month: '2023-04', citations: 312 },
-    { month: '2023-07', citations: 358 },
-    { month: '2023-10', citations: 405 },
-    { month: '2024-01', citations: 452 },
-    { month: '2024-04', citations: 498 },
-  ];
-
-  const multimodalLineData: CitationDataPoint[] = [
-    { month: '2022-01', citations: 12 },
-    { month: '2022-04', citations: 18 },
-    { month: '2022-07', citations: 25 },
-    { month: '2022-10', citations: 32 },
-    { month: '2023-01', citations: 41 },
-    { month: '2023-04', citations: 48 },
-    { month: '2023-07', citations: 55 },
-    { month: '2023-10', citations: 63 },
-    { month: '2024-01', citations: 72 },
-    { month: '2024-04', citations: 83 },
-  ];
-
-  const socialClinicalTheories: TheoryRow[] = [
-    { subtopic: 'Health Communication', theory: 'Cognitive Behavioral Therapy', citations: 51, isTopThree: true },
-    { subtopic: 'Health Communication', theory: 'Motivational Interviewing', citations: 13, isTopThree: false },
-    { subtopic: 'Health Communication', theory: 'The Belmont Report', citations: 13, isTopThree: false },
-    { subtopic: 'Mental Health Diagnosis', theory: 'The DSM-5', citations: 33, isTopThree: true },
-    { subtopic: 'Mental Health Diagnosis', theory: 'The Dark Triad', citations: 4, isTopThree: false },
-    { subtopic: 'Personality Assessment', theory: 'Five Factor Model', citations: 25, isTopThree: true },
-    { subtopic: 'Personality Assessment', theory: 'HEXACO Model', citations: 8, isTopThree: false },
-  ];
-
-  const cbtDistribution: TheoryDistribution[] = [
-    { topic: 'Multimodal Learning', citations: 28 },
-    { topic: 'Educational Application', citations: 15 },
-    { topic: 'Model Adaptation', citations: 22 },
-    { topic: 'Bias & Culture', citations: 35 },
-    { topic: 'Advanced Reasoning', citations: 18 },
-    { topic: 'Domain Knowledge', citations: 31 },
-    { topic: 'Language Ability', citations: 12 },
-    { topic: 'Social Intelligence', citations: 26 },
-  ];
+  const bipartiteNodes = getBipartiteNodes();
+  const bipartiteEdges = getBipartiteEdges();
 
   const getLineChartData = () => {
-    if (selectedLLMNode === 'llm1') return multimodalLineData;
-    return overallLineData;
+    return getCitationTimeSeries(selectedLLMNode || undefined);
   };
 
   const getLineChartTitle = () => {
-    if (selectedLLMNode === 'llm1') return 'Citation Flow from Multimodal Learning to Psychology Papers';
+    if (selectedLLMNode && llmClusters[selectedLLMNode]) {
+      return `Citation Flow from ${llmClusters[selectedLLMNode].topic} to Psychology Papers`;
+    }
     return 'Overall Citation Flow from LLM Research to Psychology Papers';
   };
 
   const getLineChartColor = () => {
-    if (selectedLLMNode === 'llm1') return 'hsl(280 70% 65%)';
+    if (selectedLLMNode) {
+      const clusterNum = selectedLLMNode.match(/Cluster (\d+)/)?.[1];
+      return `hsl(var(--llm-${clusterNum || '1'}))`;
+    }
     return 'hsl(var(--chart-1))';
+  };
+
+  const theoryTableData = selectedPsychNode ? getTheoryTableData(selectedPsychNode) : [];
+  const theoryDistributionData = selectedTheory ? getTheoryDistribution(selectedTheory) : [];
+
+  const getPsychClusterTitle = () => {
+    if (selectedPsychNode && psychClusters[selectedPsychNode]) {
+      return `Subtopics and Theories in ${psychClusters[selectedPsychNode].topic}`;
+    }
+    return 'Subtopics and Theories';
+  };
+
+  const getBarChartTitle = () => {
+    if (selectedTheory) {
+      return `Citation Distribution for ${selectedTheory} Across LLM Topics`;
+    }
+    return 'Citation Distribution Across LLM Topics';
   };
 
   return (
@@ -158,8 +122,8 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 bg-card border border-card-border rounded-lg p-6 min-h-[520px]">
               <TheoryTable
-                data={socialClinicalTheories}
-                title="Subtopics and Theories in Social-Clinical Cluster"
+                data={theoryTableData}
+                title={getPsychClusterTitle()}
                 onTheoryClick={(theory) => {
                   setSelectedTheory(selectedTheory === theory ? null : theory);
                   console.log('Theory clicked:', theory);
@@ -170,8 +134,8 @@ export default function Dashboard() {
             {selectedTheory && (
               <div className="lg:col-span-5 min-h-[520px]">
                 <TheoryBarChart
-                  data={cbtDistribution}
-                  title="Citation Distribution: CBT Across LLM Topics"
+                  data={theoryDistributionData}
+                  title={getBarChartTitle()}
                 />
               </div>
             )}
