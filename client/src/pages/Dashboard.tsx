@@ -124,7 +124,7 @@ export default function Dashboard() {
 
       <main className="max-w-screen-2xl mx-auto p-8">
         <div className="flex gap-6 mb-8">
-          <div className="flex-[2] bg-card border border-card-border rounded-lg p-6 min-h-[580px]">
+          <div className="flex-[3] bg-card border border-card-border rounded-lg p-6 min-h-[580px]">
             <h2 className="text-lg font-medium text-foreground mb-4">
               Bipartite Graph: LLM Topics ↔ Psychology Topics
             </h2>
@@ -145,7 +145,7 @@ export default function Dashboard() {
             />
           </div>
 
-          <div className="flex-1 bg-card border border-card-border rounded-lg p-6 min-h-[580px]">
+          <div className="flex-[2] bg-card border border-card-border rounded-lg p-6 min-h-[580px]">
             <CitationLineChart
               data={getLineChartData()}
               title={getLineChartTitle()}
@@ -156,7 +156,7 @@ export default function Dashboard() {
 
         {selectedPsychNode && (
           <div className="flex gap-6">
-            <div className="flex-[2] bg-card border border-card-border rounded-lg p-6 min-h-[520px]">
+            <div className="flex-[3] bg-card border border-card-border rounded-lg p-6 min-h-[520px]">
               <TheoryTable
                 data={socialClinicalTheories}
                 title="Subtopics and Theories in Social-Clinical Cluster"
@@ -168,7 +168,7 @@ export default function Dashboard() {
             </div>
 
             {selectedTheory && (
-              <div className="flex-1 min-h-[520px]">
+              <div className="flex-[2] min-h-[520px]">
                 <TheoryBarChart
                   data={cbtDistribution}
                   title="Citation Distribution: CBT Across LLM Topics"
