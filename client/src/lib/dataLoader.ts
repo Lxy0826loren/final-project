@@ -29,6 +29,23 @@ export interface ClusterTheories {
   [theoryName: string]: TheoryData;
 }
 
+export interface SecondaryCluster {
+  size: number;
+  topic: string;
+  theories: string[];
+  docs: Array<{
+    title: string;
+    paperId: string;
+    abstract: string | null;
+  }>;
+}
+
+export interface SecondaryClusters {
+  [primaryCluster: string]: {
+    [secondaryCluster: string]: SecondaryCluster;
+  };
+}
+
 // Load LLM clusters
 export async function loadLLMClusters(): Promise<Record<string, LLMCluster>> {
   const response = await fetch('/data/clustered_papers_5_1760396379764.json');
@@ -56,6 +73,12 @@ export async function loadFilteredPapersInfo(): Promise<any> {
 // Load filtered papers with references (for citation relationships)
 export async function loadFilteredPapers(): Promise<any> {
   const response = await fetch('/data/filtered_papers_5_1760396379773.json');
+  return await response.json();
+}
+
+// Load secondary clustering (for subtopics)
+export async function loadSecondaryClusters(): Promise<SecondaryClusters> {
+  const response = await fetch('/data/clustered_refs_4_secondary_1760396379765.json');
   return await response.json();
 }
 

@@ -5,11 +5,13 @@ import {
   loadTheoryPool,
   loadFilteredPapersInfo,
   loadFilteredPapers,
+  loadSecondaryClusters,
   getClusterNumber,
   getTopTheories,
   type LLMCluster,
   type PsychCluster,
-  type ClusterTheories
+  type ClusterTheories,
+  type SecondaryClusters
 } from '@/lib/dataLoader';
 import { getClusterLabel } from '@/lib/clusterLabels';
 import type { BipartiteNode, BipartiteEdge } from '@/components/BipartiteGraph';
@@ -22,16 +24,18 @@ export function useVisualizationData() {
   const [llmClusters, setLlmClusters] = useState<Record<string, LLMCluster>>({});
   const [psychClusters, setPsychClusters] = useState<Record<string, PsychCluster>>({});
   const [theoryPool, setTheoryPool] = useState<Record<string, ClusterTheories>>({});
+  const [secondaryClusters, setSecondaryClusters] = useState<SecondaryClusters>({});
   const [papersInfo, setPapersInfo] = useState<any>(null);
   const [filteredPapers, setFilteredPapers] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [llm, psych, theories, papers, filtPapers] = await Promise.all([
+        const [llm, psych, theories, secondary, papers, filtPapers] = await Promise.all([
           loadLLMClusters(),
           loadPsychClusters(),
           loadTheoryPool(),
+          loadSecondaryClusters(),
           loadFilteredPapersInfo(),
           loadFilteredPapers()
         ]);
@@ -39,6 +43,7 @@ export function useVisualizationData() {
         setLlmClusters(llm);
         setPsychClusters(psych);
         setTheoryPool(theories);
+        setSecondaryClusters(secondary);
         setPapersInfo(papers);
         setFilteredPapers(filtPapers);
         setLoading(false);
@@ -150,23 +155,36 @@ export function useVisualizationData() {
     });
   };
 
-  // Get theory table data for a psychology cluster
+  // Get theory table data for a psychology cluster using secondary clustering
   const getTheoryTableData = (psychClusterId: string): TheoryRow[] => {
     const clusterNum = getClusterNumber(psychClusterId);
     const clusterKey = `Cluster ${clusterNum}`;
+    const secondaryClusterData = secondaryClusters[clusterKey];
     const clusterTheories = theoryPool[clusterKey];
 
-    if (!clusterTheories) return [];
+    if (!secondaryClusterData || !clusterTheories) return [];
 
+    const rows: TheoryRow[] = [];
     const topTheories = getTopTheories(clusterTheories, 3);
     const topTheoryNames = new Set(topTheories.map(t => t.name));
 
-    return Object.entries(clusterTheories).map(([theoryName, theoryData]) => ({
-      subtopic: psychClusters[psychClusterId]?.topic.split(' ')[0] || 'General',
-      theory: theoryName,
-      citations: theoryData.citation,
-      isTopThree: topTheoryNames.has(theoryName)
-    })).sort((a, b) => b.citations - a.citations);
+    // Iterate through secondary clusters (subtopics)
+    Object.entries(secondaryClusterData).forEach(([subClusterKey, subCluster]) => {
+      // For each theory in this subtopic
+      subCluster.theories.forEach(theoryName => {
+        const theoryData = clusterTheories[theoryName];
+        if (theoryData) {
+          rows.push({
+            subtopic: subCluster.topic,
+            theory: theoryName,
+            citations: theoryData.citation,
+            isTopThree: topTheoryNames.has(theoryName)
+          });
+        }
+      });
+    });
+
+    return rows.sort((a, b) => b.citations - a.citations);
   };
 
   // Get theory distribution across LLM clusters using real citation data
