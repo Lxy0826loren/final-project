@@ -5,6 +5,7 @@ import TheoryTable from '@/components/TheoryTable';
 import TheoryBarChart from '@/components/TheoryBarChart';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useVisualizationData } from '@/hooks/useVisualizationData';
+import { getClusterLabel } from '@/lib/clusterLabels';
 
 export default function Dashboard() {
   const [selectedLLMNode, setSelectedLLMNode] = useState<string | null>(null);
@@ -45,7 +46,8 @@ export default function Dashboard() {
     if (selectedLLMNode) {
       const llmKey = selectedLLMNode.replace('LLM-', '');
       if (llmClusters[llmKey]) {
-        return `Citation Flow from ${llmClusters[llmKey].topic} to Psychology Papers`;
+        const label = getClusterLabel(llmKey, 'llm');
+        return `Citation Flow from ${label} to Psychology Papers`;
       }
     }
     return 'Overall Citation Flow from LLM Research to Psychology Papers';
@@ -65,7 +67,8 @@ export default function Dashboard() {
 
   const getPsychClusterTitle = () => {
     if (psychKey && psychClusters[psychKey]) {
-      return `Subtopics and Theories in ${psychClusters[psychKey].topic}`;
+      const label = getClusterLabel(psychKey, 'psych');
+      return `Subtopics and Theories in ${label}`;
     }
     return 'Subtopics and Theories';
   };

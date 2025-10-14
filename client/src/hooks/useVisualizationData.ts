@@ -11,6 +11,7 @@ import {
   type PsychCluster,
   type ClusterTheories
 } from '@/lib/dataLoader';
+import { getClusterLabel } from '@/lib/clusterLabels';
 import type { BipartiteNode, BipartiteEdge } from '@/components/BipartiteGraph';
 import type { CitationDataPoint } from '@/components/CitationLineChart';
 import type { TheoryRow } from '@/components/TheoryTable';
@@ -54,7 +55,7 @@ export function useVisualizationData() {
   const getBipartiteNodes = (): BipartiteNode[] => {
     const llmNodes: BipartiteNode[] = Object.entries(llmClusters).map(([key, cluster]) => ({
       id: `LLM-${key}`,
-      label: cluster.topic.split(' ').slice(0, 2).join(' '),
+      label: getClusterLabel(key, 'llm'),
       type: 'llm' as const,
       cluster: getClusterNumber(key),
       size: cluster.size
@@ -62,7 +63,7 @@ export function useVisualizationData() {
 
     const psychNodes: BipartiteNode[] = Object.entries(psychClusters).map(([key, cluster]) => ({
       id: `Psych-${key}`,
-      label: cluster.topic.split(' ').slice(0, 2).join(' '),
+      label: getClusterLabel(key, 'psych'),
       type: 'psych' as const,
       cluster: getClusterNumber(key),
       size: cluster.size
