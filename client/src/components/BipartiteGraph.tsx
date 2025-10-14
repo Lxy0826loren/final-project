@@ -137,6 +137,8 @@ export default function BipartiteGraph({
         .attr('stop-color', targetColor);
     });
 
+    const nodeRadius = 10;
+
     llmPositions.forEach((pos, i) => {
       const node = llmNodes[i];
       const isActive = hoveredNode === node.id || selectedLLMNode === node.id || connectedNodes.has(node.id);
@@ -145,7 +147,7 @@ export default function BipartiteGraph({
       g.append('circle')
         .attr('cx', pos.x)
         .attr('cy', pos.y)
-        .attr('r', 8 + node.size / 10)
+        .attr('r', nodeRadius)
         .attr('fill', llmColors[node.cluster])
         .attr('opacity', nodeOpacity)
         .attr('stroke', 'hsl(var(--background))')
@@ -154,12 +156,12 @@ export default function BipartiteGraph({
         .style('transition', 'all 0.15s')
         .attr('data-testid', `llm-node-${node.id}`)
         .on('mouseenter', function() {
-          d3.select(this).attr('r', (8 + node.size / 10) * 1.15);
+          d3.select(this).attr('r', nodeRadius * 1.2);
           setHoveredNode(node.id);
           setTooltip({ x: pos.x, y: pos.y - 30, content: `${node.label} (${node.size} papers)` });
         })
         .on('mouseleave', function() {
-          d3.select(this).attr('r', 8 + node.size / 10);
+          d3.select(this).attr('r', nodeRadius);
           setHoveredNode(null);
           setTooltip(null);
         })
@@ -169,7 +171,7 @@ export default function BipartiteGraph({
 
       g.append('text')
         .attr('x', pos.x)
-        .attr('y', pos.y - (8 + node.size / 10) - 8)
+        .attr('y', pos.y - nodeRadius - 8)
         .attr('text-anchor', 'middle')
         .attr('fill', 'hsl(var(--foreground))')
         .attr('font-size', '12px')
@@ -186,7 +188,7 @@ export default function BipartiteGraph({
       g.append('circle')
         .attr('cx', pos.x)
         .attr('cy', pos.y)
-        .attr('r', 8 + node.size / 10)
+        .attr('r', nodeRadius)
         .attr('fill', psychColors[node.cluster])
         .attr('opacity', nodeOpacity)
         .attr('stroke', 'hsl(var(--background))')
@@ -195,12 +197,12 @@ export default function BipartiteGraph({
         .style('transition', 'all 0.15s')
         .attr('data-testid', `psych-node-${node.id}`)
         .on('mouseenter', function() {
-          d3.select(this).attr('r', (8 + node.size / 10) * 1.15);
+          d3.select(this).attr('r', nodeRadius * 1.2);
           setHoveredNode(node.id);
           setTooltip({ x: pos.x, y: pos.y + 30, content: `${node.label} (${node.size} papers)` });
         })
         .on('mouseleave', function() {
-          d3.select(this).attr('r', 8 + node.size / 10);
+          d3.select(this).attr('r', nodeRadius);
           setHoveredNode(null);
           setTooltip(null);
         })
@@ -210,7 +212,7 @@ export default function BipartiteGraph({
 
       g.append('text')
         .attr('x', pos.x)
-        .attr('y', pos.y + (8 + node.size / 10) + 20)
+        .attr('y', pos.y + nodeRadius + 20)
         .attr('text-anchor', 'middle')
         .attr('fill', 'hsl(var(--foreground))')
         .attr('font-size', '12px')
