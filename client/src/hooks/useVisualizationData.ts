@@ -50,10 +50,10 @@ export function useVisualizationData() {
     loadData();
   }, []);
 
-  // Generate bipartite graph nodes
+  // Generate bipartite graph nodes with prefixes to avoid ID conflicts
   const getBipartiteNodes = (): BipartiteNode[] => {
     const llmNodes: BipartiteNode[] = Object.entries(llmClusters).map(([key, cluster]) => ({
-      id: key,
+      id: `LLM-${key}`,
       label: cluster.topic.split(' ').slice(0, 2).join(' '),
       type: 'llm' as const,
       cluster: getClusterNumber(key),
@@ -61,7 +61,7 @@ export function useVisualizationData() {
     }));
 
     const psychNodes: BipartiteNode[] = Object.entries(psychClusters).map(([key, cluster]) => ({
-      id: key,
+      id: `Psych-${key}`,
       label: cluster.topic.split(' ').slice(0, 2).join(' '),
       type: 'psych' as const,
       cluster: getClusterNumber(key),
@@ -76,7 +76,6 @@ export function useVisualizationData() {
     if (!filteredPapers) return [];
 
     const edges: BipartiteEdge[] = [];
-    const edgeWeights: Record<string, number> = {};
     
     // Calculate edges based on actual citation relationships from filteredPapers
     Object.entries(llmClusters).forEach(([llmKey, llmCluster]) => {
@@ -99,16 +98,13 @@ export function useVisualizationData() {
         });
 
         if (citationCount > 0) {
-          const edgeKey = `${llmKey}-${psychKey}`;
-          edgeWeights[edgeKey] = citationCount;
+          edges.push({ 
+            source: `LLM-${llmKey}`,
+            target: `Psych-${psychKey}`,
+            weight: citationCount 
+          });
         }
       });
-    });
-
-    // Convert to edge array
-    Object.entries(edgeWeights).forEach(([key, weight]) => {
-      const [source, target] = key.split('-');
-      edges.push({ source, target, weight });
     });
 
     return edges;

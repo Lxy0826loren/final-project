@@ -37,12 +37,16 @@ export default function Dashboard() {
   const bipartiteEdges = getBipartiteEdges();
 
   const getLineChartData = () => {
-    return getCitationTimeSeries(selectedLLMNode || undefined);
+    const llmKey = selectedLLMNode?.replace('LLM-', '');
+    return getCitationTimeSeries(llmKey || undefined);
   };
 
   const getLineChartTitle = () => {
-    if (selectedLLMNode && llmClusters[selectedLLMNode]) {
-      return `Citation Flow from ${llmClusters[selectedLLMNode].topic} to Psychology Papers`;
+    if (selectedLLMNode) {
+      const llmKey = selectedLLMNode.replace('LLM-', '');
+      if (llmClusters[llmKey]) {
+        return `Citation Flow from ${llmClusters[llmKey].topic} to Psychology Papers`;
+      }
     }
     return 'Overall Citation Flow from LLM Research to Psychology Papers';
   };
@@ -55,12 +59,13 @@ export default function Dashboard() {
     return 'hsl(var(--chart-1))';
   };
 
-  const theoryTableData = selectedPsychNode ? getTheoryTableData(selectedPsychNode) : [];
+  const psychKey = selectedPsychNode?.replace('Psych-', '');
+  const theoryTableData = psychKey ? getTheoryTableData(psychKey) : [];
   const theoryDistributionData = selectedTheory ? getTheoryDistribution(selectedTheory) : [];
 
   const getPsychClusterTitle = () => {
-    if (selectedPsychNode && psychClusters[selectedPsychNode]) {
-      return `Subtopics and Theories in ${psychClusters[selectedPsychNode].topic}`;
+    if (psychKey && psychClusters[psychKey]) {
+      return `Subtopics and Theories in ${psychClusters[psychKey].topic}`;
     }
     return 'Subtopics and Theories';
   };
