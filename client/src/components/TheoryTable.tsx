@@ -10,11 +10,48 @@ export interface TheoryRow {
 interface TheoryTableProps {
   data: TheoryRow[];
   title: string;
+  psychClusterId?: string;
   onTheoryClick?: (theory: string) => void;
 }
 
-export default function TheoryTable({ data, title, onTheoryClick }: TheoryTableProps) {
+export default function TheoryTable({ data, title, psychClusterId, onTheoryClick }: TheoryTableProps) {
   const maxCitations = Math.max(...data.map(d => d.citations));
+  const minCitations = Math.min(...data.map(d => d.citations));
+  
+  // Psychology cluster colors matching BipartiteGraph
+  const psychColors = ['#f87171', '#67e8f9', '#c084fc', '#fb923c', '#4ade80', '#60a5fa'];
+  
+  // Get cluster number from psychClusterId (e.g., "Psych-Cluster 0" -> 0)
+  const getClusterNumber = (id: string | undefined): number => {
+    if (!id) return 0;
+    const match = id.match(/Cluster (\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  };
+  
+  // Convert hex to RGB
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+  };
+  
+  // Get background color based on citations (lighter for fewer citations, darker for more)
+  const getCellColor = (citations: number) => {
+    const clusterNum = getClusterNumber(psychClusterId);
+    const baseColor = psychColors[clusterNum] || psychColors[0];
+    const rgb = hexToRgb(baseColor);
+    
+    // Calculate opacity based on citation count (0.15 to 0.6 range)
+    const normalizedCitations = maxCitations === minCitations 
+      ? 0.5 
+      : (citations - minCitations) / (maxCitations - minCitations);
+    const opacity = 0.15 + normalizedCitations * 0.45;
+    
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+  };
 
   return (
     <div className="w-full h-full flex flex-col" data-testid="theory-table">
@@ -38,21 +75,24 @@ export default function TheoryTable({ data, title, onTheoryClick }: TheoryTableP
           </thead>
           <tbody>
             {data.map((row, index) => {
-              const opacity = 0.4 + (row.citations / maxCitations) * 0.6;
+              const cellColor = getCellColor(row.citations);
               return (
                 <tr
                   key={index}
-                  className="border-b border-border hover-elevate transition-colors"
-                  style={{ opacity }}
+                  className="border-b border-border transition-colors"
                   data-testid={`theory-row-${index}`}
                 >
-                  <td className="px-4 py-3 text-sm text-foreground">
+                  <td className="px-4 py-3 text-sm text-foreground" data-testid={`theory-subtopic-${index}`}>
                     {row.subtopic}
                   </td>
-                  <td className="px-4 py-3 text-sm text-foreground">
+                  <td 
+                    className="px-4 py-3 text-sm text-foreground"
+                    style={{ backgroundColor: cellColor }}
+                    data-testid={`theory-name-${index}`}
+                  >
                     <button
                       onClick={() => row.isTopThree && onTheoryClick?.(row.theory)}
-                      className={`flex items-center gap-2 ${row.isTopThree ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}
+                      className={`flex items-center gap-2 w-full ${row.isTopThree ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
                       data-testid={row.isTopThree ? `top-theory-${index}` : undefined}
                       disabled={!row.isTopThree}
                     >
@@ -62,7 +102,11 @@ export default function TheoryTable({ data, title, onTheoryClick }: TheoryTableP
                       <span>{row.theory}</span>
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-sm text-right font-mono">
+                  <td 
+                    className="px-4 py-3 text-sm text-right font-mono"
+                    style={{ backgroundColor: cellColor }}
+                    data-testid={`theory-citations-${index}`}
+                  >
                     {row.citations}
                   </td>
                 </tr>

@@ -130,6 +130,7 @@ export default function Dashboard() {
               <TheoryTable
                 data={theoryTableData}
                 title={getPsychClusterTitle()}
+                psychClusterId={selectedPsychNode || undefined}
                 onTheoryClick={(theory) => {
                   setSelectedTheory(selectedTheory === theory ? null : theory);
                 }}
