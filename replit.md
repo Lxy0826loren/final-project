@@ -27,6 +27,8 @@ Preferred communication style: Simple, everyday language.
 
 **Data Visualization**
 - **D3.js v7** for custom bipartite graph visualization showing LLM-to-Psychology citation networks
+  - Node labels rendered in two lines using SVG tspan elements to prevent text overlap
+  - Intelligent text splitting at word boundaries for optimal readability
 - **Recharts** for standard charts (line charts, bar charts)
 - Custom interactive components: BipartiteGraph, CitationLineChart, TheoryBarChart, TheoryTable
 - **Consistent naming**: All visualizations use unified cluster labels from clusterLabels.ts mapping

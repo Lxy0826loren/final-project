@@ -36,6 +36,21 @@ export default function BipartiteGraph({
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; content: string } | null>(null);
 
+  // Split text into two lines intelligently
+  const splitTextIntoTwoLines = (text: string): [string, string] => {
+    const words = text.split(' ');
+    if (words.length <= 2) {
+      return words.length === 2 ? [words[0], words[1]] : [text, ''];
+    }
+    
+    // Try to split roughly in the middle, preferring natural word breaks
+    const midPoint = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, midPoint).join(' ');
+    const secondLine = words.slice(midPoint).join(' ');
+    
+    return [firstLine, secondLine];
+  };
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -179,16 +194,29 @@ export default function BipartiteGraph({
         .attr('pointer-events', 'none')
         .style('transition', 'all 0.15s');
 
-      g.append('text')
+      // Split label into two lines
+      const [line1, line2] = splitTextIntoTwoLines(node.label);
+      const textGroup = g.append('text')
         .attr('x', pos.x)
-        .attr('y', pos.y - nodeRadius - 8)
+        .attr('y', pos.y - nodeRadius - 18)
         .attr('text-anchor', 'middle')
         .attr('fill', 'hsl(var(--foreground))')
-        .attr('font-size', '12px')
+        .attr('font-size', '11px')
         .attr('font-weight', '500')
         .attr('opacity', nodeOpacity)
-        .attr('pointer-events', 'none')
-        .text(node.label);
+        .attr('pointer-events', 'none');
+      
+      textGroup.append('tspan')
+        .attr('x', pos.x)
+        .attr('dy', 0)
+        .text(line1);
+      
+      if (line2) {
+        textGroup.append('tspan')
+          .attr('x', pos.x)
+          .attr('dy', '1.1em')
+          .text(line2);
+      }
     });
 
     psychPositions.forEach((pos, i) => {
@@ -228,16 +256,29 @@ export default function BipartiteGraph({
         .attr('pointer-events', 'none')
         .style('transition', 'all 0.15s');
 
-      g.append('text')
+      // Split label into two lines
+      const [line1, line2] = splitTextIntoTwoLines(node.label);
+      const textGroup = g.append('text')
         .attr('x', pos.x)
-        .attr('y', pos.y + nodeRadius + 20)
+        .attr('y', pos.y + nodeRadius + 16)
         .attr('text-anchor', 'middle')
         .attr('fill', 'hsl(var(--foreground))')
-        .attr('font-size', '12px')
+        .attr('font-size', '11px')
         .attr('font-weight', '500')
         .attr('opacity', nodeOpacity)
-        .attr('pointer-events', 'none')
-        .text(node.label);
+        .attr('pointer-events', 'none');
+      
+      textGroup.append('tspan')
+        .attr('x', pos.x)
+        .attr('dy', 0)
+        .text(line1);
+      
+      if (line2) {
+        textGroup.append('tspan')
+          .attr('x', pos.x)
+          .attr('dy', '1.1em')
+          .text(line2);
+      }
     });
 
   }, [nodes, edges, hoveredNode, selectedLLMNode, selectedPsychNode]);
