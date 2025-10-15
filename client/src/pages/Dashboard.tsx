@@ -82,6 +82,29 @@ export default function Dashboard() {
     return 'Citation Distribution Across LLM Topics';
   };
 
+  const getBarChartColors = () => {
+    // LLM colors matching BipartiteGraph - same array as line chart
+    const llmColors = ['#c084fc', '#60a5fa', '#4ade80', '#fb923c', '#f87171', '#67e8f9', '#a78bfa', '#fbbf24'];
+    
+    // Map cluster labels to cluster numbers to get correct colors
+    const clusterLabelToNumber: { [key: string]: number } = {
+      'Multimodal Learning': 0,
+      'Educational Application': 1,
+      'Model Adaptation & Efficiency': 2,
+      'Bias, Morality & Culture': 3,
+      'Advanced Reasoning': 4,
+      'Domain Knowledge': 5,
+      'Language Ability': 6,
+      'Social Intelligence': 7
+    };
+    
+    // Create color array in the same order as theoryDistributionData
+    return theoryDistributionData.map(item => {
+      const clusterNum = clusterLabelToNumber[item.topic];
+      return llmColors[clusterNum] || llmColors[0];
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
@@ -144,6 +167,7 @@ export default function Dashboard() {
                 <TheoryBarChart
                   data={theoryDistributionData}
                   title={getBarChartTitle()}
+                  colors={getBarChartColors()}
                 />
               </div>
             )}
