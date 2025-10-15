@@ -29,6 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **D3.js v7** for custom bipartite graph visualization showing LLM-to-Psychology citation networks
 - **Recharts** for standard charts (line charts, bar charts)
 - Custom interactive components: BipartiteGraph, CitationLineChart, TheoryBarChart, TheoryTable
+- **Consistent naming**: All visualizations use unified cluster labels from clusterLabels.ts mapping
 - **Color-coded visualization**: TheoryTable uses psychology cluster colors from BipartiteGraph with opacity-based intensity mapping (0.15-0.6) to represent citation counts - higher citations appear darker
 
 **State Management**

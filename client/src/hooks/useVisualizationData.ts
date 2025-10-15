@@ -240,7 +240,7 @@ export function useVisualizationData() {
       });
 
       distribution.push({
-        topic: llmCluster.topic.split(' ').slice(0, 2).join(' '),
+        topic: getClusterLabel(llmKey, 'llm'),
         citations: citationCount
       });
     });
