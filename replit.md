@@ -30,9 +30,13 @@ Preferred communication style: Simple, everyday language.
   - Node labels rendered in two lines using SVG tspan elements to prevent text overlap
   - Intelligent text splitting at word boundaries for optimal readability
 - **Recharts** for standard charts (line charts, bar charts)
+  - Line chart dynamically matches selected LLM node color from BipartiteGraph
+  - Enhanced line visualization with 3px stroke and 5px dots for clarity
 - Custom interactive components: BipartiteGraph, CitationLineChart, TheoryBarChart, TheoryTable
 - **Consistent naming**: All visualizations use unified cluster labels from clusterLabels.ts mapping
-- **Color-coded visualization**: TheoryTable uses psychology cluster colors from BipartiteGraph with opacity-based intensity mapping (0.15-0.6) to represent citation counts - higher citations appear darker
+- **Color-coded visualization**: 
+  - TheoryTable uses psychology cluster colors from BipartiteGraph with opacity-based intensity mapping (0.15-0.6) to represent citation counts - higher citations appear darker
+  - CitationLineChart uses LLM cluster colors to match selected nodes in BipartiteGraph
 
 **State Management**
 - **TanStack Query (React Query)** for async state management and data fetching

@@ -60,11 +60,12 @@ export default function CitationLineChart({ data, title, color = 'hsl(var(--char
               type="monotone"
               dataKey="citations"
               stroke={color}
-              strokeWidth={2.5}
-              dot={{ fill: color, r: 4 }}
-              activeDot={{ r: 6 }}
+              strokeWidth={3}
+              dot={{ fill: color, r: 5, strokeWidth: 2, stroke: color }}
+              activeDot={{ r: 7, strokeWidth: 2 }}
               animationDuration={400}
               animationEasing="ease-in-out"
+              connectNulls={true}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -55,10 +55,12 @@ export default function Dashboard() {
 
   const getLineChartColor = () => {
     if (selectedLLMNode) {
+      // LLM colors matching BipartiteGraph
+      const llmColors = ['#c084fc', '#60a5fa', '#4ade80', '#fb923c', '#f87171', '#67e8f9', '#a78bfa', '#fbbf24'];
       const clusterNum = selectedLLMNode.match(/Cluster (\d+)/)?.[1];
-      return `hsl(var(--llm-${clusterNum || '1'}))`;
+      return llmColors[parseInt(clusterNum || '0')] || llmColors[0];
     }
-    return 'hsl(var(--chart-1))';
+    return '#60a5fa'; // Default blue
   };
 
   const psychKey = selectedPsychNode?.replace('Psych-', '');
